@@ -1,0 +1,24 @@
+{
+  "nodes": [
+    {
+      "addr": "172.20.0.11",
+      "port": 27017,
+      "credentials": [
+        {
+          "username": "root",
+          "password": "example"
+        }
+      ]
+    },
+    {
+      "addr": "172.20.0.12",
+      "port": 27017,
+      "credentials": [
+        {
+          "username": "root",
+          "password": "example"
+        }
+      ]
+    }
+  ]
+}
