@@ -22,7 +22,7 @@ async def update(request: Request):
 
     if priority not in service.unprocessed_queue.keys():
         service.unprocessed_queue[priority] = sync_manager.dict()
-        # unprocessed_queue = sync_manager.dict({k: unprocessed_queue[k] for k in sorted(unprocessed_queue.keys())})
+        service.order_by_priorities()
 
     databases: dict = service.unprocessed_queue[priority]
     if database not in databases.keys():

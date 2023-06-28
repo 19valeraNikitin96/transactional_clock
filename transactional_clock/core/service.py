@@ -59,6 +59,16 @@ class Service:
     def resulting_transactions(self) -> Queue:
         return self._resulting_transactions
 
+    def order_by_priorities(self):
+        lock = sync_manager.Lock()
+        lock.acquire()
+        keys = list(self._unprocessed_queue.keys())
+        keys.sort()
+        self._unprocessed_queue = sync_manager.dict(
+            {k: self._unprocessed_queue[k] for k in keys}
+        )
+        lock.release()
+
 
 class MongoDBFlavor(Service):
 
