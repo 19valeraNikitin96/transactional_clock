@@ -9,7 +9,7 @@ operations = APIRouter()
 service: Service = MongoDBFlavor()
 
 
-@operations.put("/update")
+@operations.put("/mongodb")
 async def update(request: Request):
     database = request.headers.get('Database')
     collection = request.headers.get('Collection')
@@ -42,7 +42,7 @@ async def update(request: Request):
     ids[_id] = sync_manager.list(sorted(ids[_id], key=lambda t: t.created_at))
 
 
-@operations.post('/create')
+@operations.post('/mongodb')
 async def create(req: Request):
     database = req.headers.get('Database')
     collection = req.headers.get('Collection')
@@ -70,7 +70,35 @@ async def create(req: Request):
     queue: list = ids[_id]
     t = Transaction(payload, None, TransactionType.CREATE)
     queue.append(t)
-    ids[_id] = sync_manager.list(sorted(ids[_id], key=lambda t: t.created_at))
+
+
+@operations.delete("/mongodb")
+async def update(request: Request):
+    database = request.headers.get('Database')
+    collection = request.headers.get('Collection')
+    _id = request.headers.get('Id')
+    priority = request.headers.get('Priority', DEFAULT_PRIORITY)
+    priority = int(priority)
+
+    if priority not in service.unprocessed_queue.keys():
+        service.unprocessed_queue[priority] = sync_manager.dict()
+        service.order_by_priorities()
+
+    databases: dict = service.unprocessed_queue[priority]
+    if database not in databases.keys():
+        databases[database] = sync_manager.dict()
+
+    collections: dict = databases[database]
+    if collection not in collections.keys():
+        collections[collection] = sync_manager.dict()
+
+    ids: dict = collections[collection]
+    if _id not in ids.keys():
+        ids[_id] = sync_manager.list()
+
+    queue: list = ids[_id]
+    t = Transaction(None, None, TransactionType.DELETE)
+    queue.append(t)
 
 # @operations.delete("/delete")
 # async def delete(request: Request):

@@ -11,6 +11,8 @@ class TransactionType(Enum):
 class TransactionBase:
 
     def __init__(self, data: dict, operation: TransactionType):
+        if data is None and operation != TransactionType.DELETE:
+            raise Exception(f"data must be present if operation is {operation}")
         self._data = data
         self._operation = operation
 
@@ -49,7 +51,7 @@ class Transaction(TransactionBase):
     def __init__(self, data: dict, created_at: datetime, operation: TransactionType):
         super().__init__(data, operation)
 
-        if created_at is None and operation != TransactionType.CREATE:
+        if created_at is None and operation == TransactionType.UPDATE:
             raise Exception(f"created_at must be present for {operation}")
         self._created_at = created_at
 

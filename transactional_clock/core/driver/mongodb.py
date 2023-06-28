@@ -101,7 +101,13 @@ class MongoDBDriver(Driver):
         if resulting.operation == TransactionType.DELETE:
             logging.debug('Deleting from MongoDB...')
 
-        print('Ok')
+            deletion = {'_id': ObjectId(resulting.id)}
+
+            for inst in self._instances:
+                db = inst[database]
+                collection = db[collection_name]
+
+                collection.delete_one(deletion)
 
     def generate_id(self) -> ObjectId:
         return ObjectId()
