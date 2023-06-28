@@ -40,6 +40,14 @@ class Service:
                                 ids[_id] = sync_manager.list()
                                 continue
 
+                            creates = [t for t in transactions if t.operation == TransactionType.CREATE]
+                            if len(creates) > 0:
+                                t = creates[-1]
+                                res = ResultingTransaction(_id, t.data, TransactionType.CREATE, database, collection)
+                                self._resulting_transactions.put(res)
+                                ids[_id] = sync_manager.list()
+                                continue
+
                             res = dict()
                             for t in transactions:
                                 from transactional_clock.core.util import dict_merge
@@ -69,6 +77,8 @@ class Service:
         )
         lock.release()
 
+    def generate_id(self): ...
+
 
 class MongoDBFlavor(Service):
 
@@ -85,3 +95,6 @@ class MongoDBFlavor(Service):
                 print(f"Resulting transactions: {self._resulting_transactions.qsize()}")
                 t: ResultingTransaction = self._resulting_transactions.get()
                 self._driver.push(t, t.database, t.collection)
+
+    def generate_id(self) -> str:
+        return str(self._driver.generate_id())

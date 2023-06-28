@@ -48,6 +48,9 @@ class Transaction(TransactionBase):
 
     def __init__(self, data: dict, created_at: datetime, operation: TransactionType):
         super().__init__(data, operation)
+
+        if created_at is None and operation != TransactionType.CREATE:
+            raise Exception(f"created_at must be present for {operation}")
         self._created_at = created_at
 
     @property

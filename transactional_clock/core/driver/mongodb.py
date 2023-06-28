@@ -83,7 +83,25 @@ class MongoDBDriver(Driver):
 
             return
 
+        if resulting.operation == TransactionType.CREATE:
+            logging.debug('Updating MongoDB...')
+            print('Updating MongoDB...')
+
+            insertion = resulting.data
+            insertion['_id'] = ObjectId(resulting.id)
+
+            for inst in self._instances:
+                db = inst[database]
+                collection = db[collection_name]
+
+                collection.insert_one(insertion)
+
+            return
+
         if resulting.operation == TransactionType.DELETE:
             logging.debug('Deleting from MongoDB...')
 
         print('Ok')
+
+    def generate_id(self) -> ObjectId:
+        return ObjectId()
