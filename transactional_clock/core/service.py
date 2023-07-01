@@ -15,9 +15,9 @@ DEFAULT_PRIORITY = 50
 class Service:
 
     def __init__(self):
-        self._unprocessed_transactions = sync_manager.Queue() # put any ControllerTransaction
-        self._transactions = sync_manager.dict() # processed transactions
-        self._resulting_transactions = sync_manager.Queue() # resulting transactions
+        self._unprocessed_transactions = Queue() # put any transactions
+        self._transactions = dict() # processed transactions
+        self._resulting_transactions = Queue() # resulting transactions
 
         self._hosting_thread = threading.Thread(target=self._add_newcomes, args=())
         logging.debug('Starting hosting thread...')
@@ -40,32 +40,32 @@ class Service:
                 t = self._unprocessed_transactions.get()
 
                 if t.priority not in self._transactions.keys():
-                    self._transactions[t.priority] = sync_manager.dict()
+                    self._transactions[t.priority] = dict()
                     self.order_by_priorities()
 
                 databases: dict = self._transactions[t.priority]
                 if t.database not in databases.keys():
-                    databases[t.database] = sync_manager.dict()
+                    databases[t.database] = dict()
 
                 collections: dict = databases[t.database]
                 if t.collection not in collections.keys():
-                    collections[t.collection] = sync_manager.dict()
+                    collections[t.collection] = dict()
 
                 ids: dict = collections[t.collection]
                 if t.id not in ids.keys():
-                    ids[t.id] = sync_manager.list()
+                    ids[t.id] = list()
 
                 queue: list = ids[t.id]
                 queue.append(t)
-                ids[t.id] = sync_manager.list(sorted(ids[t.id], key=lambda t: t.created_at))
+                ids[t.id] = list(sorted(ids[t.id], key=lambda t: t.created_at))
 
             sync_lock.release()
 
     def _merge_transactions(self):
         while True:
+            sync_lock.acquire()
             _sorted = sorted(self._transactions.items())
             logging.debug(f"Sorted: {_sorted}")
-            sync_lock.acquire()
             for priority, databases in _sorted:
                 logging.debug(f"Databases: {databases}")
                 for database, collections in databases.items():
@@ -78,7 +78,7 @@ class Service:
                             if len(deletes) > 0:
                                 res = ResultingTransaction(_id, None, TransactionType.DELETE, database, collection)
                                 self._resulting_transactions.put(res)
-                                ids[_id] = sync_manager.list()
+                                ids[_id] = list()
                                 continue
 
                             creates = [t for t in transactions if t.operation == TransactionType.CREATE]
@@ -89,7 +89,7 @@ class Service:
 
                             updates = [t for t in transactions if t.operation == TransactionType.UPDATE]
                             if len(updates) == 0:
-                                ids[_id] = sync_manager.list()
+                                ids[_id] = list()
                                 continue
 
                             res = dict()
@@ -99,7 +99,7 @@ class Service:
 
                             res = ResultingTransaction(_id, res, TransactionType.UPDATE, database, collection)
                             self._resulting_transactions.put(res)
-                            ids[_id] = sync_manager.list()
+                            ids[_id] = list()
 
             sync_lock.release()
 
@@ -120,9 +120,7 @@ class Service:
     def order_by_priorities(self):
         keys = list(self._transactions.keys())
         keys.sort()
-        self._transactions = sync_manager.dict(
-            {k: self._transactions[k] for k in keys}
-        )
+        self._transactions = {k: self._transactions[k] for k in keys}
 
     def generate_id(self): ...
 
