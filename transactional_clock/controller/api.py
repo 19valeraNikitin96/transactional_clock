@@ -20,26 +20,33 @@ async def update(request: Request):
 
     payload = await request.json()
 
-    if priority not in service.unprocessed_queue.keys():
-        service.unprocessed_queue[priority] = sync_manager.dict()
-        service.order_by_priorities()
+    created_at = datetime.fromisoformat(created_at)
+    t = Transaction(_id, payload, created_at, TransactionType.UPDATE, database, collection, priority)
+    service.add_new_transaction(t)
+    # if priority not in service.unprocessed_queue.keys():
+    #     service.unprocessed_queue[priority] = sync_manager.dict()
+    #     service.order_by_priorities()
+    #
+    # databases: dict = service.unprocessed_queue[priority]
+    # if database not in databases.keys():
+    #     databases[database] = sync_manager.dict()
+    #
+    # collections: dict = databases[database]
+    # if collection not in collections.keys():
+    #     collections[collection] = sync_manager.dict()
+    #
+    # ids: dict = collections[collection]
+    # if _id not in ids.keys():
+    #     ids[_id] = sync_manager.list()
+    #
+    # queue: list = ids[_id]
+    # t = Transaction(payload, datetime.fromisoformat(created_at), TransactionType.UPDATE)
+    # queue.append(t)
+    # ids[_id] = sync_manager.list(sorted(ids[_id], key=lambda t: t.created_at))
 
-    databases: dict = service.unprocessed_queue[priority]
-    if database not in databases.keys():
-        databases[database] = sync_manager.dict()
-
-    collections: dict = databases[database]
-    if collection not in collections.keys():
-        collections[collection] = sync_manager.dict()
-
-    ids: dict = collections[collection]
-    if _id not in ids.keys():
-        ids[_id] = sync_manager.list()
-
-    queue: list = ids[_id]
-    t = Transaction(payload, datetime.fromisoformat(created_at), TransactionType.UPDATE)
-    queue.append(t)
-    ids[_id] = sync_manager.list(sorted(ids[_id], key=lambda t: t.created_at))
+    return {
+        'id': _id
+    }
 
 
 @operations.post('/mongodb')
@@ -51,54 +58,69 @@ async def create(req: Request):
 
     payload = await req.json()
 
-    if priority not in service.unprocessed_queue.keys():
-        service.unprocessed_queue[priority] = sync_manager.dict()
-        service.order_by_priorities()
-
-    databases: dict = service.unprocessed_queue[priority]
-    if database not in databases.keys():
-        databases[database] = sync_manager.dict()
-
-    collections: dict = databases[database]
-    if collection not in collections.keys():
-        collections[collection] = sync_manager.dict()
-
-    ids: dict = collections[collection]
     _id = service.generate_id()
-    ids[_id] = sync_manager.list()
+    t = Transaction(_id, payload, datetime.utcnow(), TransactionType.CREATE, database, collection, priority)
+    service.add_new_transaction(t)
 
-    queue: list = ids[_id]
-    t = Transaction(payload, None, TransactionType.CREATE)
-    queue.append(t)
+    # if priority not in service.unprocessed_queue.keys():
+    #     service.unprocessed_queue[priority] = sync_manager.dict()
+    #     service.order_by_priorities()
+    #
+    # databases: dict = service.unprocessed_queue[priority]
+    # if database not in databases.keys():
+    #     databases[database] = sync_manager.dict()
+    #
+    # collections: dict = databases[database]
+    # if collection not in collections.keys():
+    #     collections[collection] = sync_manager.dict()
+    #
+    # ids: dict = collections[collection]
+    # _id = service.generate_id()
+    # ids[_id] = sync_manager.list()
+    #
+    # queue: list = ids[_id]
+    # t = Transaction(payload, None, TransactionType.CREATE)
+    # queue.append(t)
+
+    return {
+        'id': _id
+    }
 
 
 @operations.delete("/mongodb")
-async def update(request: Request):
+async def delete(request: Request):
     database = request.headers.get('Database')
     collection = request.headers.get('Collection')
     _id = request.headers.get('Id')
     priority = request.headers.get('Priority', DEFAULT_PRIORITY)
     priority = int(priority)
 
-    if priority not in service.unprocessed_queue.keys():
-        service.unprocessed_queue[priority] = sync_manager.dict()
-        service.order_by_priorities()
+    t = Transaction(_id, None, datetime.utcnow(), TransactionType.DELETE, database, collection, priority)
+    service.add_new_transaction(t)
 
-    databases: dict = service.unprocessed_queue[priority]
-    if database not in databases.keys():
-        databases[database] = sync_manager.dict()
-
-    collections: dict = databases[database]
-    if collection not in collections.keys():
-        collections[collection] = sync_manager.dict()
-
-    ids: dict = collections[collection]
-    if _id not in ids.keys():
-        ids[_id] = sync_manager.list()
-
-    queue: list = ids[_id]
-    t = Transaction(None, None, TransactionType.DELETE)
-    queue.append(t)
+    # if priority not in service.unprocessed_queue.keys():
+    #     service.unprocessed_queue[priority] = sync_manager.dict()
+    #     service.order_by_priorities()
+    #
+    # databases: dict = service.unprocessed_queue[priority]
+    # if database not in databases.keys():
+    #     databases[database] = sync_manager.dict()
+    #
+    # collections: dict = databases[database]
+    # if collection not in collections.keys():
+    #     collections[collection] = sync_manager.dict()
+    #
+    # ids: dict = collections[collection]
+    # if _id not in ids.keys():
+    #     ids[_id] = sync_manager.list()
+    #
+    # queue: list = ids[_id]
+    # t = Transaction(None, None, TransactionType.DELETE)
+    # queue.append(t)
+    #
+    return {
+        'id': _id
+    }
 
 # @operations.delete("/delete")
 # async def delete(request: Request):

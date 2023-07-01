@@ -46,18 +46,29 @@ class ResultingTransaction(TransactionBase):
         return self._collection
 
 
-class Transaction(TransactionBase):
+class Transaction(ResultingTransaction):
 
-    def __init__(self, data: dict, created_at: datetime, operation: TransactionType):
-        super().__init__(data, operation)
+    def __init__(self, _id: str, data: dict, created_at: datetime, operation: TransactionType, database: str, collection: str, priority: int):
+        super().__init__(_id, data, operation, database, collection)
 
         if created_at is None and operation == TransactionType.UPDATE:
             raise Exception(f"created_at must be present for {operation}")
         self._created_at = created_at
+        self._priority = priority
 
     @property
     def created_at(self) -> datetime:
         return self._created_at
+
+    @property
+    def priority(self) -> int:
+        return self._priority
+
+    def __str__(self):
+        return str(self.__dict__)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 # class TransactionQueue:
