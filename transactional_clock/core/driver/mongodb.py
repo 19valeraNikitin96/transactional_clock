@@ -32,6 +32,9 @@ class DBAccess:
         self._credentials = [Credentials(creds['username'], creds['password']) for creds in src['credentials']]
 
     def get_credentials(self) -> Credentials:
+        if len(self._credentials) == 0:
+            return None
+
         creds = self._credentials[-1]
         return creds
 
@@ -57,19 +60,22 @@ class MongoDBDriver(Driver):
 
         self._instances = list()
         for access in accesses:
+            if creds is None:
+                conn_str = f"mongodb://{access.address}:{access.port}/"
+            else:
+                conn_str = f"mongodb://{creds.username}:{creds.password}@{access.address}:{access.port}/"
+
             self._instances.append(
                 MongoClient(
-                    f"mongodb://{creds.username}:{creds.password}@{access.address}:{access.port}/?authSource=admin",
+                    conn_str,
                     server_api=ServerApi('1')
                 )
             )
 
     def push(self, resulting: ResultingTransaction, database: str, collection_name: str):
         logging.debug(resulting.__dict__)
-        print(resulting.__dict__)
         if resulting.operation == TransactionType.UPDATE:
             logging.debug('Updating MongoDB...')
-            print('Updating MongoDB...')
             for inst in self._instances:
                 db = inst[database]
                 collection = db[collection_name]
@@ -85,7 +91,6 @@ class MongoDBDriver(Driver):
 
         if resulting.operation == TransactionType.CREATE:
             logging.debug('Updating MongoDB...')
-            print('Updating MongoDB...')
 
             insertion = resulting.data
             insertion['_id'] = ObjectId(resulting.id)
