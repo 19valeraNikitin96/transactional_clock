@@ -1,0 +1,57 @@
+services:
+# first, we define the three mongo servers that will act as replicas
+# here, we steup the hostname ports, and startup command
+# which is the same as discussed in the previous section
+
+  # https://hevodata.com/learn/mongodb-replica-set-config/
+  mongo1:
+    hostname: mongo1
+    image: mongo
+    networks:
+      default:
+        ipv4_address: 172.21.0.11
+    expose:
+      - 27017
+#    ports:
+#      - 30001:27017
+    restart: always
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: example
+  mongo2:
+    depends_on:
+      - mongo1
+    hostname: mongo2
+    image: mongo
+    networks:
+      default:
+        ipv4_address: 172.21.0.12
+    expose:
+      - 27017
+#    ports:
+#      - 30002:27017
+    restart: always
+#    command: mongod --replSet my-mongo-set
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: example
+#  mongo3:
+#    depends_on:
+#      - mongo1
+#    hostname: mongo3
+#    image: mongo
+#    networks:
+#      default:
+#        ipv4_address: 172.21.0.13
+#    expose:
+#      - 27017
+#    ports:
+#      - 30003:27017
+#    restart: always
+#      '
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
