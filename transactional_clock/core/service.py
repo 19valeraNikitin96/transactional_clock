@@ -1,13 +1,12 @@
 import logging
 import threading
-from multiprocessing import Manager
+from multiprocessing import Lock
 from queue import Queue
 
 from transactional_clock.core.driver.mongodb import MongoDBDriver
 from transactional_clock.core.storage import TransactionType, ResultingTransaction, Transaction
 
-sync_manager = Manager()
-sync_lock = sync_manager.Lock()
+sync_lock = Lock()
 
 DEFAULT_PRIORITY = 50
 
