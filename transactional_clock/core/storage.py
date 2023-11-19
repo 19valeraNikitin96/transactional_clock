@@ -16,6 +16,13 @@ class TransactionBase:
         self._data = data
         self._operation = operation
 
+        self.__cleanup()
+
+    def __cleanup(self):
+        key = '_id'
+        if key in self._data.keys():
+            del self._data[key]
+
     @property
     def data(self) -> dict:
         return self._data
