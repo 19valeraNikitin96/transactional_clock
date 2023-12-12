@@ -19,6 +19,8 @@ class Service:
         self._transactions = dict() # processed transactions
         self._resulting_transactions = Queue() # resulting transactions
 
+        self._is_paused = False
+
         self._hosting_thread = threading.Thread(target=self._add_newcomes, args=())
         logging.debug('Starting hosting thread...')
         self._hosting_thread.start()
@@ -30,6 +32,23 @@ class Service:
         sync_lock.acquire()
         self._unprocessed_transactions.put(t)
         print(f"Adding: {t}")
+        sync_lock.release()
+
+    def _reset(self):
+        sync_lock.acquire()
+        self._unprocessed_transactions = Queue()
+        self._transactions = dict()
+        self._resulting_transactions = Queue()
+        sync_lock.release()
+
+    def on(self):
+        sync_lock.acquire()
+        self._is_paused = False
+        sync_lock.release()
+
+    def off(self):
+        sync_lock.acquire()
+        self._is_paused = True
         sync_lock.release()
 
     def _add_newcomes(self):
@@ -62,8 +81,7 @@ class Service:
             sync_lock.release()
 
     def _merge_transactions(self):
-        while True:
-            sync_lock.acquire()
+        def do_iteration():
             _sorted = sorted(self._transactions.items())
             logging.debug(f"Sorted: {_sorted}")
             for priority, databases in _sorted:
@@ -101,6 +119,14 @@ class Service:
                             self._resulting_transactions.put(res)
                             ids[_id] = list()
 
+                            return
+
+        while True:
+            if self._is_paused:
+                continue
+
+            sync_lock.acquire()
+            do_iteration()
             sync_lock.release()
 
     def _push_resulting_transactions(self): ...
