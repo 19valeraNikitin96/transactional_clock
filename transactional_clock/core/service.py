@@ -84,6 +84,8 @@ class Service:
         def do_iteration():
             _sorted = sorted(self._transactions.items())
             logging.debug(f"Sorted: {_sorted}")
+
+            is_processed = False
             for priority, databases in _sorted:
                 logging.debug(f"Databases: {databases}")
                 for database, collections in databases.items():
@@ -119,7 +121,10 @@ class Service:
                             self._resulting_transactions.put(res)
                             ids[_id] = list()
 
-                            return
+                            is_processed = True
+
+                if is_processed:
+                    break
 
         while True:
             if self._is_paused:
