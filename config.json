@@ -1,13 +1,18 @@
 {
   "nodes": [
     {
-      "addr": "172.21.0.11",
-      "port": 27017,
+      "addr": "localhost",
+      "port": 27027,
       "credentials": []
     },
     {
-      "addr": "172.21.0.12",
-      "port": 27017,
+      "addr": "localhost",
+      "port": 27028,
+      "credentials": []
+    },
+    {
+      "addr": "localhost",
+      "port": 27029,
       "credentials": []
     }
   ]
