@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import Request, APIRouter
 
-from transactional_clock.core.service import DEFAULT_PRIORITY, sync_manager, Service, MongoDBFlavor
+from transactional_clock.core.service import DEFAULT_PRIORITY, Service, MongoDBFlavor
 from transactional_clock.core.storage import Transaction, TransactionType
 
 operations = APIRouter()
