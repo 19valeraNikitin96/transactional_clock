@@ -20,7 +20,7 @@ class TransactionBase:
 
     def __cleanup(self):
         key = '_id'
-        if key in self._data.keys():
+        if self._data is not None and key in self._data.keys():
             del self._data[key]
 
     @property
